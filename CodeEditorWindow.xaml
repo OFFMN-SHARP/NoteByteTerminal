@@ -1,0 +1,40 @@
+﻿<Window x:Class="NoteByteTerminal.CodeEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NoteByteTerminal"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        Title="CodeEditorWindow" Height="450" Width="800" ResizeMode="NoResize">
+    <Grid>
+        <TextBox x:Name="CodeEditorTextBox" HorizontalAlignment="Center" Height="370" Margin="0,55,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="780"/>
+        <Button x:Name="CodeEditorSaveButton" Content="保存" HorizontalAlignment="Left" Height="20" Margin="10,10,0,0" VerticalAlignment="Top" Width="50" Background="White" BorderBrush="Black" Click="CodeEditorSaveButton_Click"/>
+        <Button x:Name="CodeEditorOpenButton" Content="打开" HorizontalAlignment="Left" Margin="60,10,0,0" VerticalAlignment="Top" Height="20" Width="50" BorderBrush="Black" Background="White"/>
+        <Button x:Name="CodeEditorSettingButton" Content="编辑器设置" HorizontalAlignment="Left" Height="20" Margin="10,30,0,0" VerticalAlignment="Top" Width="100" BorderBrush="Black" Background="White" Click="CodeEditorSettingButton_Click"/>
+        <TextBlock HorizontalAlignment="Left" Height="15" Margin="115,10,0,0" TextWrapping="Wrap" Text="编程语言：" VerticalAlignment="Top" Width="110" Background="White"/>
+        <TextBlock HorizontalAlignment="Left" Margin="115,28,0,0" TextWrapping="Wrap" Text="字符：" VerticalAlignment="Top" Width="110"/>
+        <TextBlock HorizontalAlignment="Left" Height="15" Margin="230,28,0,0" TextWrapping="Wrap" Text="文件格式：" VerticalAlignment="Top" Width="100"/>
+        <Grid x:Name="EditorSettingGridBackground" HorizontalAlignment="Left" Height="435" VerticalAlignment="Center" Width="800">
+            <Grid.Background>
+                <SolidColorBrush Color="#FF322864" Opacity="0.25"/>
+            </Grid.Background>
+            <Grid x:Name="EditorSettingGridMain" HorizontalAlignment="Left" Height="200" Margin="95,75,0,0" VerticalAlignment="Top" Width="295">
+                <Grid.Background>
+                    <SolidColorBrush Color="White" Opacity="0.7"/>
+                </Grid.Background>
+                <Label Content="CodeEditor" HorizontalAlignment="Left" Height="99" Margin="35,143,0,0" VerticalAlignment="Top" Width="260" FontSize="44" FontStyle="Italic" Foreground="#FFB7B7B7"/>
+                <CheckBox Content="高级权限保存（管理员）" HorizontalAlignment="Left" Height="16" Margin="140,2,0,0" VerticalAlignment="Top" Width="155"/>
+                <Label Content="设置" HorizontalAlignment="Left" Height="35" VerticalAlignment="Top" Width="75" FontSize="20"/>
+                <Label Content="代码编辑器 Ver.1.0" HorizontalAlignment="Left" Height="32" Margin="41,11,0,0" VerticalAlignment="Top" Width="107" FontSize="11" Foreground="#FF787878"/>
+                <ComboBox HorizontalAlignment="Left" Height="20" Margin="41,31,0,0" VerticalAlignment="Top" Width="107"/>
+                <Label Content="字体：" HorizontalAlignment="Left" Height="40" Margin="1,26,0,0" VerticalAlignment="Top" Width="40"/>
+                <Label Content="主题：" HorizontalAlignment="Left" Height="24" Margin="0,54,0,0" VerticalAlignment="Top" Width="41"/>
+                <ComboBox HorizontalAlignment="Left" Height="20" Margin="40,56,0,0" VerticalAlignment="Top" Width="108"/>
+                <Label Content="Beta" HorizontalAlignment="Left" Height="23" Margin="238,143,0,0" VerticalAlignment="Top" Width="82" Foreground="#FFB7B7B7" FontWeight="Bold"/>
+                <Button x:Name="SettingGridClose" Content="X" HorizontalAlignment="Left" Height="18" Margin="269,25,0,0" VerticalAlignment="Top" Width="16" Background="White" BorderBrush="Black" Click="SettingGridClose_Click"/>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</Window>

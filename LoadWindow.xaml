@@ -1,0 +1,20 @@
+﻿<Window x:Name="LoadWindows" x:Class="NoteByteTerminal.LoadWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NoteByteTerminal"
+        mc:Ignorable="d"
+        Topmost="True"
+        Loaded="LoadWindows_Loaded"
+        Title="LoadWindow" Height="160" Width="240" WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <ProgressBar x:Name="GetConfigAndLoadOthersBar" HorizontalAlignment="Center" Height="20" Margin="0,119,0,0" VerticalAlignment="Top" Width="200"/>
+        <Label Content="正在读取配置……" HorizontalAlignment="Left" Height="40" Margin="14,94,0,0" VerticalAlignment="Top" Width="190" FontSize="16"/>
+        <TextBlock x:Name="ReadDirTextBlock" HorizontalAlignment="Center" Height="10" Margin="0,139,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="201" FontSize="9"/>
+        <Label Content="NoteByte" HorizontalAlignment="Left" Height="40" VerticalAlignment="Top" Width="130" FontSize="24" FontWeight="Bold"/>
+        <Label Content="Terminal" HorizontalAlignment="Left" Height="90" Margin="30,20,0,0" VerticalAlignment="Top" Width="220" FontSize="48" Foreground="#FFF3FF00"/>
+        <Label Content="请稍等……" HorizontalAlignment="Left" Height="25" Margin="165,77,0,0" VerticalAlignment="Top" Width="125" FontWeight="Bold"/>
+
+    </Grid>
+</Window>
