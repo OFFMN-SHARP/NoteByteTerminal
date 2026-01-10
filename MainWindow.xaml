@@ -13,15 +13,14 @@
             <RowDefinition/>
             <RowDefinition Height="84*"/>
         </Grid.RowDefinitions>
-        <RichTextBox x:Name="TerminalOutput" Height="195" Margin="10,5,10,0" Grid.Row="1" VerticalAlignment="Top" Background="White" BorderBrush="Black" SelectionBrush="#FFE0FF00" TextChanged="RichTextBox_TextChanged">
-            <FlowDocument>
-                <Paragraph>
-                    <Run Text=""/>
-                </Paragraph>
-            </FlowDocument>
-        </RichTextBox>
+        <TextBox x:Name="TerminalOutput" Margin="10,10,10,57" Grid.Row="1" TextWrapping="Wrap" SelectionBrush="#FFBAD400" BorderBrush="Black" Background="#FFFFFFFA"/>
+
         <TextBox x:Name="ArgsText" Height="20" Margin="342,217,70,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <ComboBox x:Name="CommandText" HorizontalAlignment="Left" Height="20" Margin="80,217,0,0" Grid.Row="1" VerticalAlignment="Top" Width="220" IsEditable="True"/>
+        <ComboBox x:Name="CommandText" HorizontalAlignment="Left" Height="20" Margin="80,217,0,0" Grid.Row="1" VerticalAlignment="Top" Width="220" IsEditable="True">
+            <ComboBoxItem Content="A"/>
+            <ComboBoxItem Content="B"/>
+            <ComboBoxItem Content="C"/>
+        </ComboBox>
         <TextBlock x:Name="ExitCodeText" HorizontalAlignment="Left" Height="16" Margin="10,182,0,0" Grid.Row="1" TextWrapping="Wrap" Text="退出代码：" VerticalAlignment="Top" Width="145"/>
         <TextBox x:Name="WorkDirText" Height="17" Margin="80,200,10,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top"/>
         <Label Content="工作目录：" HorizontalAlignment="Left" Margin="16,196,0,0" Grid.Row="1" VerticalAlignment="Top"/>

@@ -89,7 +89,7 @@ namespace NoteByteTerminal
        
 
         private readonly object lockObject = new object();
-        private Process TerminalCommand = new Process();
+        private Process TerminalCommand;
         private string WorkingDirectoryText = "";
 
         private string GetIni(string GetSectionName,string GetKey,string DefaultValue)
@@ -101,9 +101,11 @@ namespace NoteByteTerminal
             string GetValue = Configuration[GetSectionName + ":" + GetKey] ?? DefaultValue;
             return GetValue;
         }
-        private System.Timers.Timer UpsateTextTimer = new System.Timers.Timer();
-        private async void TerminalCommand_Run(int OutputMode=0)
+        private System.Timers.Timer UpsateTextTimer;
+        private async Task TerminalCommand_Run(int OutputMode=0)
         {
+            TerminalCommand = new Process();
+            UpsateTextTimer = new System.Timers.Timer();
             string Check = "";
             Dispatcher.Invoke(() =>
             {
@@ -226,7 +228,7 @@ WMIC           在交互式命令 shell 中显示 WMI 信息。";
                 }
                 Dispatcher.Invoke(() =>
                 {
-                    TerminalOutput.Document.Blocks.Add(new Paragraph(new Run(
+                    TerminalOutput.AppendText(
     @"
 ========= NoteByte Terminal Help =========
 "
@@ -244,12 +246,15 @@ nedit           Open NoteByte Terminal Code Editor
 "
     +
     "========== End =========="
-                        )));
+                        );
                 });
                 return;
             }
             TerminalIsRuningTheCommand = true;
-            string AllText = new TextRange(TerminalOutput.Document.ContentStart, TerminalOutput.Document.ContentEnd).Text;
+            Dispatcher.Invoke(() =>
+            {
+                string AllText = TerminalOutput.Text;
+            });
             string PFileName = "";
             PFileName = GetIni("Terminal", "CommandCore", "cmd.exe");
             Dispatcher.Invoke(() =>
@@ -266,10 +271,15 @@ nedit           Open NoteByte Terminal Code Editor
                     WorkDirText.Text = Directory.GetCurrentDirectory();
                 }
             }
+            string Terminal_Args = "";
+            Dispatcher.Invoke(() =>
+            {
+                Terminal_Args = " /c " + CommandText.Text + " " + ArgsText.Text;
+            });
             var Terminal_CommandInfo = new ProcessStartInfo
             {
                 FileName = PFileName,
-                Arguments = " /c " + CommandText.Text + " " + ArgsText.Text,
+                Arguments =Terminal_Args,
                 WorkingDirectory = WorkingDirectoryText,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
@@ -288,44 +298,97 @@ nedit           Open NoteByte Terminal Code Editor
                     {
                         ConsoleOutputTextString += args.Data + "\n";
                     }
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        TerminalOutput.AppendText(args.Data + "\n");
+                        TerminalOutput.ScrollToEnd();
+                    }));
                 }
             };
+            bool IsOutputError=false;
+            bool IsOutErrorEnd=false;
             TerminalCommand.ErrorDataReceived += (sender, args) =>
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
                     ConsoleErrorTextString += args.Data + "\n";
                 }
+                if (!IsOutputError)
+                {
+                    IsOutputError = true;
+                    Dispatcher.Invoke(() => 
+                    {
+                        string Text = "=========<Error Start>=========\n";
+                        TerminalOutput.AppendText(Text);
+                    }
+                    );
+                }
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    TerminalOutput.AppendText(args.Data + "\n");
+                    TerminalOutput.ScrollToEnd();
+                }));
+
+                
             };
-            TerminalCommand.Start();
-            TerminalCommand.BeginOutputReadLine();
-            TerminalCommand.BeginErrorReadLine();
-            UpsateTextTimer.Interval = 1000;
-            UpsateTextTimer.Elapsed += (sender, args) =>
+            try
             {
+                
+                TerminalCommand.Start();
                 Dispatcher.Invoke(() =>
                 {
-                    UpdateText();
+                    string startText = $">[{CommandText.Text + " " + ArgsText.Text}](PID: {TerminalCommand.Id})\nStarted {CommandText.Text + " " + ArgsText.Text} in {WorkingDirectoryText}...\n=========<Output Start>=========\n";
+                    TerminalOutput.AppendText(startText);
                 });
-            };
-            UpsateTextTimer.Start();
-            void UpdateText()
-            {
-                TerminalOutput.Document.Blocks.Clear();                
-                ConsoleTextString = $">[{WorkingDirectoryText}](PID: {TerminalCommand.Id}) \nStarted {CommandText.Text + " " + ArgsText.Text} in {WorkingDirectoryText}...\n=========<Output Start>=========\n{ConsoleOutputTextString}\n=========<Error Start>==========\n{ConsoleErrorTextString}\n=========<End>==================";
-                TerminalOutput.Document.Blocks.Add(new Paragraph(new Run(ConsoleTextString)));
+                TerminalCommand.BeginOutputReadLine();
+                TerminalCommand.BeginErrorReadLine();
+                if (IsOutErrorEnd)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        string Text = "=========<End>==================\n";
+                        TerminalOutput.AppendText(Text);
+                        TerminalOutput.ScrollToEnd();
+                    });
+                }
             }
+            catch (Exception ex)
+            {
+               MessageBox.Show(ex.Message);
+            }
+            
+            
             try
             {
                 await Task.Run(() => TerminalCommand.WaitForExit());
             }
             finally
             {
-                UpsateTextTimer.Stop();
+                
             }
-            ExitCodeText.Text = "退出代码:"+TerminalCommand.ExitCode.ToString();
+            string ExitStatus = "";
+            Dispatcher.Invoke(() => {
+                ExitStatus =TerminalCommand.ExitCode.ToString();
+            });
+            Dispatcher.Invoke(() =>
+            {
+            ExitCodeText.Text = "退出代码:" + ExitStatus;
+                /*
             TerminalOutput.Document.Blocks.Clear();
             TerminalOutput.Document.Blocks.Add(new Paragraph(new Run(AllText + "\n" + ConsoleTextString)));
+                */
+                Dispatcher.Invoke(() =>
+                {
+                    string Text = "=========<End>==================\n";
+                    TerminalOutput.AppendText(Text);
+                    TerminalOutput.ScrollToEnd();
+                });
+            });
+            await Task.Run(() => {
+                TerminalCommand.WaitForExit();
+                TerminalCommand.Dispose();
+            });
         }
 
         private System.Windows.Forms.NotifyIcon TerminalNotifyIcon = new System.Windows.Forms.NotifyIcon();
@@ -360,6 +423,29 @@ nedit           Open NoteByte Terminal Code Editor
                 TerminalNotifyIcon.ContextMenuStrip = menu;
             }
         }
+        private void CommandText_MouseEnter(object sender, MouseEventArgs e)
+        {
+            CommandText.ToolTip = "Enter your command here";
+            CommandText.IsDropDownOpen = true;
+            string searchText = CommandText.Text;
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                // 在命令列表中查找匹配的命令
+                foreach (var item in CommandText.Items)
+                {
+                    if (item.ToString().StartsWith(searchText, StringComparison.OrdinalIgnoreCase))
+                    {
+                        CommandText.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+        }
+        private void CommandText_MouseLeave(object sender, MouseEventArgs e)
+        {
+            CommandText.ToolTip = null;
+            CommandText.IsDropDownOpen = false;
+        }
 
         private void TerminalWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -370,6 +456,77 @@ nedit           Open NoteByte Terminal Code Editor
             TerminalWindow.Top = 0;
             WindowPositionEventCount = 0;
             EventWindowPositionUpdate();
+            CommandText.MouseEnter += CommandText_MouseEnter;
+            CommandText.MouseLeave += CommandText_MouseLeave;
+            string core = GetIni("Terminal", "CommandCore", "cmd.exe");
+            if (core == "powershell.exe")
+            {
+                CommandText.ItemsSource = new List<string>
+                {
+                    "help",
+                    "cd",
+                    "Get-help",
+                    "Get-Process",
+                    "Get-Service",
+                    "Get-Command",
+                    "Set-Location",
+                    "Get-ChildItem",
+                    "Copy-Item",
+                    "Move-Item",
+                    "Remove-Item",
+                    "New-Item",
+                    "Get-Content",
+                    "Set-Content",
+                    "Add-Content",
+                    "Clear-Host",
+                    "Start-Process",
+                    "Stop-Process",
+                    "Get-History",
+                    "Invoke-History",
+                    "Import-Module",
+                    "Export-ModuleMember"
+                };
+            }
+            if (core == "cmd.exe")
+            {
+                CommandText.ItemsSource = new List<string>
+                {
+                    "help",
+                    "assoc",
+                    "attrib",
+                    "break",
+                    "cacls",
+                    "call",
+                    "cd",
+                    "chcp",
+                    "chdir",
+                    "chkdsk",
+                    "cls",
+                    "cmd",
+                    "color",
+                    "comp",
+                    "compact",
+                    "convert",
+                    "copy",
+                    "date",
+                    "del",
+                    "dir",
+                    "diskpart",
+                    "doskey",
+                    "driverquery",
+                    "echo",
+                    "endlocal",
+                    "erase",
+                    "exit",
+                    "fc",
+                    "find",
+                    "findstr",
+                    "for",
+                    "format",
+                    "fsutil",
+                    "ftype"
+                };
+            }
             if (!File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "User", "NOEASTER.txt")))
             {
                 string egg_str = GetIni("EasterEgg", "NotSupportLinux", "Yes");
@@ -403,6 +560,14 @@ nedit           Open NoteByte Terminal Code Editor
             {
                 if(e.Key == Key.Enter)
                 {
+                    if (CodeEditorGrid.Visibility == Visibility.Visible)
+                    {
+                        return;
+                    }
+                    if(string.IsNullOrEmpty(CommandText.Text))
+                    {
+                        return;
+                    }
                     RunCommandButton.IsEnabled = false;
                     await Task.Run(() => TerminalCommand_Run());
                     RunCommandButton.IsEnabled = true;
@@ -411,7 +576,6 @@ nedit           Open NoteByte Terminal Code Editor
                     {
                         if (TerminalIsRuningTheCommand != true)
                         {
-
                             return;
                         }
                         TerminalCommand.Kill();
